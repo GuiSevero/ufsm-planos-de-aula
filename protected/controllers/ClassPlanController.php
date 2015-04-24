@@ -32,10 +32,27 @@ class ClassPlanController extends Controller
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('create','update'),
+				'actions'=>array('create','update','generateAccessToken'),
 				'users'=>array('@'),
 			),
-				array('allow', // allow authenticated user to perform 'create' and 'update' actions
+			array('allow', // allow authenticated user to perform 'create' and 'update' actions
+				'actions'=>array('update'),
+				'expression'=>function(){
+
+						//Verifica se tem os parametros
+						if(isset($_GET['id']) && isset($_GET['access_token'])){
+							$model = $this->loadModel($_GET['id']);
+
+						//verifica se o modelo tem um acess token
+						if($model->access_token == null) return false;
+
+						//Concede acesso se token estiver correto
+						return ($model->access_token == $_GET['access_token']);
+					}
+
+				},
+			),
+			array('allow', // allow authenticated user to perform 'create' and 'update' actions
 				'actions'=>array('delete'),
 				'expression'=>function($user, $rule){
 
@@ -93,19 +110,31 @@ class ClassPlanController extends Controller
 		$model=new ClassPlan;
 
 		$model->id_owner = Yii::app()->user->getId();
+		$users = User::model()->findAll(array('order'=>'email', 'condition'=>'id_user <> ' .$model->id_owner));
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
 		if(isset($_POST['ClassPlan']))
 		{
+
+
+			if(isset($_POST['ClassPlan']['participants']))
+				$model->participants = $_POST['ClassPlan']['participants'];
+			
+
 			$model->attributes=$_POST['ClassPlan'];
-			if($model->save())
+
+			if($model->save()){
+
 				$this->redirect(array('view','id'=>$model->id_class));
+
+			}
 		}
 
 		$this->render('create',array(
 			'model'=>$model,
+			'users'=>$users,
 		));
 	}
 
@@ -117,12 +146,16 @@ class ClassPlanController extends Controller
 	public function actionUpdate($id)
 	{
 		$model=$this->loadModel($id);
+		$users = User::model()->findAll(array('order'=>'email', 'condition'=>'id_user <> ' .$model->id_owner));
 
 		// Uncomment the following line if AJAX validation is needed
 		// $this->performAjaxValidation($model);
 
 		if(isset($_POST['ClassPlan']))
 		{
+			if(isset($_POST['ClassPlan']['participants']))
+				$model->participants = $_POST['ClassPlan']['participants'];
+
 			$model->attributes=$_POST['ClassPlan'];
 			if($model->save())
 				$this->redirect(array('view','id'=>$model->id_class));
@@ -130,7 +163,34 @@ class ClassPlanController extends Controller
 
 		$this->render('update',array(
 			'model'=>$model,
+			'users'=>$users,
 		));
+	}
+
+	public function actionGenerateAccessToken($id)
+	{
+		$model=$this->loadModel($id);
+
+		$model->access_token = Helper::generateToken();
+
+
+
+		if($model->save()){
+
+			$link = "http://{$_SERVER['SERVER_NAME']}{$this->createUrl('/classPlan/update', array('id'=>$model->id_class, 'access_token'=>$model->access_token))}";
+
+			header("Content-type: application/json");
+			echo json_encode(array('success'=>true, 'url'=>$link));
+			Yii::app()->end();
+			return;
+		}else{
+
+			header("Content-type: application/json");
+			echo json_encode(array('success'=>true, 'url'=>null));
+			Yii::app()->end();
+			return;
+		}
+
 	}
 
 	/**
