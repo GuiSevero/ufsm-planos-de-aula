@@ -13,7 +13,7 @@
       <script src="../bower_components/bootstrap/assets/js/html5shiv.js"></script>
       <script src="../bower_components/bootstrap/assets/js/respond.min.js"></script>
     <![endif]-->     
-	<title><?php echo CHtml::encode($this->pageTitle); ?></title>
+	<title>UFSM - <?php echo CHtml::encode($this->pageTitle); ?></title>
   <style type="text/css">
   body{
 
