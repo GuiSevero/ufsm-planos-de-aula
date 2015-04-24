@@ -1,4 +1,4 @@
-## UNIVERSIDADE FEDERAL DO RIO GRANDE DO SUL
+## UNIVERSIDADE FEDERAL DE SANTA MARIA
 #### GTECH EDU
 ---------------
 
@@ -25,5 +25,4 @@ Ferramenta Web para auxílio na criação de planos de aulas.
 - Carregue o dump do banco de dados contido na pasta Class_Plans/schema/cp.backup
 
   
-
 
