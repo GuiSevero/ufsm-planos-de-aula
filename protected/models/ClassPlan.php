@@ -16,6 +16,7 @@
  * @property integer $id_owner
  * @property string $descricao
  * @property string $theme
+ * @property string $access_token
  *
  * The followings are the available model relations:
  * @property User $owner
